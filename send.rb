@@ -40,27 +40,32 @@ default_send_parameters = {
     :send_file1 => encoded_contents
 }
 
-def send(parameters)
-    settings = YAML.load_file('settings.yml')
-    client = Savon::Client.new do
-        wsdl.document = settings['wsdl']
+class FaxDeService
+    def initialize(wsdl_url)
+        @client = Savon::Client.new do
+            wsdl.document = wsdl_url
+        end
     end
 
-    response = client.request :send do
-        soap.body = parameters
-    end
-    result = response.to_hash[:send_response]
-    return_code = result[:return]
-    abort(return_code) if return_code != "0"
+    def send(parameters)
+        response = @client.request :send do
+            soap.body = parameters
+        end
+        result = response.to_hash[:send_response]
+        return_code = result[:return]
+        abort(return_code) if return_code != "0"
 
-    yield result
+        yield result
+    end
 end
 
-send default_send_parameters.merge({:schalter => 'TEST'}) do |result|
+settings = YAML.load_file('settings.yml')
+fax_de = FaxDeService.new(settings['wsdl'])
+fax_de.send default_send_parameters.merge({:schalter => 'TEST'}) do |result|
     doc = result[:check_doc_file]
     File.open('result.tiff', 'wb') { |f| f.write(Base64.decode64(doc)) }
 end
 
 exit if options[:dry_run]
 
-send default_send_parameters
+fax_de.send default_send_parameters
