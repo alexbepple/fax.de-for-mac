@@ -53,13 +53,14 @@ def send(parameters)
     return_code = result[:return]
     abort(return_code) if return_code != "0"
 
-    result
+    yield result
 end
 
-result = send default_send_parameters.merge({:schalter => 'TEST'})
+send default_send_parameters.merge({:schalter => 'TEST'}) do |result|
+    doc = result[:check_doc_file]
+    File.open('result.tiff', 'wb') { |f| f.write(Base64.decode64(doc)) }
+end
 
-doc = result[:check_doc_file]
-File.open('result.tiff', 'wb') { |f| f.write(Base64.decode64(doc)) }
 exit if options[:dry_run]
 
 send default_send_parameters
