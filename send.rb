@@ -3,6 +3,9 @@
 require 'rubygems'
 require 'savon'
 require 'base64'
+require 'yaml'
+
+prefs = YAML.load_file('prefs.yml')
 
 HTTPI.log = false
 Savon.configure do |config|
@@ -21,8 +24,8 @@ encoded_contents = Base64.encode64(contents)
 response = client.request :send do
     bw_iletter = 3
     soap.body = {
-        :account => '', 
-        :password => '',
+        :account => prefs['account'], 
+        :password => prefs['password'],
         :job_art => bw_iletter,
         :empfaenger_nr => name_of_file_to_send,
         :send_filename1 => name_of_file_to_send,
