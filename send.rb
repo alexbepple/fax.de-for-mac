@@ -24,11 +24,6 @@ Savon.configure do |config|
     config.log = false
 end
 
-settings = YAML.load_file('settings.yml')
-client = Savon::Client.new do
-    wsdl.document = settings['wsdl']
-end
-
 name_of_file_to_send = ARGV[0]
 path_to_file = File.join(Dir.pwd, name_of_file_to_send)
 contents = File.open(path_to_file, 'rb') { |f| f.read }
@@ -45,21 +40,26 @@ default_send_parameters = {
     :send_file1 => encoded_contents
 }
 
-response = client.request :send do
-    soap.body = default_send_parameters.merge({:schalter => 'TEST'})
+def send(parameters)
+    settings = YAML.load_file('settings.yml')
+    client = Savon::Client.new do
+        wsdl.document = settings['wsdl']
+    end
+
+    response = client.request :send do
+        soap.body = parameters
+    end
+    result = response.to_hash[:send_response]
+    return_code = result[:return]
+    abort(return_code) if return_code != "0"
+
+    result
 end
-result = response.to_hash[:send_response]
-return_code = result[:return]
-abort(return_code) if return_code != "0"
+
+result = send default_send_parameters.merge({:schalter => 'TEST'})
 
 doc = result[:check_doc_file]
 File.open('result.tiff', 'wb') { |f| f.write(Base64.decode64(doc)) }
 exit if options[:dry_run]
 
-response = client.request :send do
-    soap.body = default_send_parameters
-end
-result = response.to_hash[:send_response]
-return_code = result[:return]
-abort(return_code) if return_code != "0"
-
+send default_send_parameters
