@@ -6,9 +6,6 @@ require 'base64'
 require 'yaml'
 require 'optparse'
 
-prefs = YAML.load_file('prefs.yml')
-settings = YAML.load_file('settings.yml')
-
 options = {}
 options_parser = OptionParser.new do |opts|
     options[:dry_run] = false
@@ -27,6 +24,7 @@ Savon.configure do |config|
     config.log = false
 end
 
+settings = YAML.load_file('settings.yml')
 client = Savon::Client.new do
     wsdl.document = settings['wsdl']
 end
@@ -36,19 +34,20 @@ path_to_file = File.join(Dir.pwd, name_of_file_to_send)
 contents = File.open(path_to_file, 'rb') { |f| f.read }
 encoded_contents = Base64.encode64(contents)
 
-response = client.request :send do
-    bw_iletter = 3
-    soap.body = {
-        :account => prefs['account'], 
-        :password => prefs['password'],
-        :job_art => bw_iletter,
-        :empfaenger_nr => name_of_file_to_send,
-        :send_filename1 => name_of_file_to_send,
-        :send_file1 => encoded_contents,
-        :schalter => 'TEST',
-    }
-end
+prefs = YAML.load_file('prefs.yml')
+bw_iletter = 3
+default_send_parameters = {
+    :account => prefs['account'], 
+    :password => prefs['password'],
+    :job_art => bw_iletter,
+    :empfaenger_nr => name_of_file_to_send,
+    :send_filename1 => name_of_file_to_send,
+    :send_file1 => encoded_contents
+}
 
+response = client.request :send do
+    soap.body = default_send_parameters.merge({:schalter => 'TEST'})
+end
 result = response.to_hash[:send_response]
 return_code = result[:return]
 abort(return_code) if return_code != "0"
@@ -58,15 +57,7 @@ File.open('result.tiff', 'wb') { |f| f.write(Base64.decode64(doc)) }
 exit if options[:dry_run]
 
 response = client.request :send do
-    bw_iletter = 3
-    soap.body = {
-        :account => prefs['account'], 
-        :password => prefs['password'],
-        :job_art => bw_iletter,
-        :empfaenger_nr => name_of_file_to_send,
-        :send_filename1 => name_of_file_to_send,
-        :send_file1 => encoded_contents
-    }
+    soap.body = default_send_parameters
 end
 result = response.to_hash[:send_response]
 return_code = result[:return]
