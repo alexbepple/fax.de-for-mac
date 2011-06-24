@@ -33,11 +33,10 @@ class Account
 end
 
 class FaxDeLetter
-    def initialize(fax_de, args={})
+    def initialize(fax_de, name, contents)
         @fax_de = fax_de
-        @account = args[:account]
-        @name = args[:name]
-        @contents = Base64.encode64(args[:contents])
+        @name = name
+        @contents = Base64.encode64(contents)
     end
     
     def generate_preview
@@ -54,17 +53,17 @@ class FaxDeLetter
     def to_hash
         prefs = YAML.load_file('prefs.yml')
         bw_iletter = 3
-        @account.to_hash.merge({
+        {
             :job_art => bw_iletter,
             :empfaenger_nr => @name,
             :send_filename1 => @name,
             :send_file1 => @contents
-        })
+        }
     end
 end
 
 class FaxDeService
-    def initialize(wsdl_url)
+    def initialize(wsdl_url, account)
         HTTPI.log = false
         Savon.configure do |config|
             config.log = false
@@ -73,11 +72,14 @@ class FaxDeService
         @client = Savon::Client.new do
             wsdl.document = wsdl_url
         end
+
+        @account = account
     end
 
     def send(parameters)
+        account = @account
         response = @client.request :send do
-            soap.body = parameters
+            soap.body = account.to_hash.merge(parameters)
         end
         result = response.to_hash[:send_response]
         return_code = result[:return]
@@ -87,17 +89,17 @@ class FaxDeService
     end
 end
 
-settings = YAML.load_file('settings.yml')
-fax_de = FaxDeService.new(settings['wsdl'])
-
 prefs = YAML.load_file('prefs.yml')
 account = Account.new prefs['account'], prefs['password']
+
+settings = YAML.load_file('settings.yml')
+fax_de = FaxDeService.new(settings['wsdl'], account)
 
 name_of_file_to_send = ARGV[0]
 path_to_file = File.join(Dir.pwd, name_of_file_to_send)
 contents = File.open(path_to_file, 'rb') { |f| f.read }
 
-letter = FaxDeLetter.new(fax_de, :account => account, :name => name_of_file_to_send, :contents => contents)
+letter = FaxDeLetter.new(fax_de, name_of_file_to_send, contents)
 
 letter.generate_preview do |preview|
     File.open('result.tiff', 'wb') { |f| f.write(preview) }
