@@ -6,6 +6,7 @@ require 'base64'
 require 'yaml'
 
 prefs = YAML.load_file('prefs.yml')
+settings = YAML.load_file('settings.yml')
 
 HTTPI.log = false
 Savon.configure do |config|
@@ -13,7 +14,7 @@ Savon.configure do |config|
 end
 
 client = Savon::Client.new do
-    wsdl.document = "http://ccs.fax.de/xmlws3.exe/wsdl/IXMLWS2"
+    wsdl.document = settings['wsdl']
 end
 
 name_of_file_to_send = ARGV[0]
