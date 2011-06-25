@@ -4,6 +4,9 @@ require 'base64'
 require 'yaml'
 require 'optparse'
 
+require 'rubygems'
+require 'ruby-growl'
+
 require 'fax_de'
 
 options = {}
@@ -19,6 +22,17 @@ options_parser = OptionParser.new do |opts|
 end
 options_parser.parse!
 
+class FaxDeGrowlNotifier
+    def initialize
+        @growl = Growl.new "127.0.0.1", "fax.de", ['']
+    end
+    def notify(message)
+        @growl.notify '', 'Fax.de', message
+    end
+end
+
+notifier = FaxDeGrowlNotifier.new
+
 account_prefs = YAML.load_file('account.yml')
 account = Account.new account_prefs['account'], account_prefs['password']
 
@@ -33,6 +47,9 @@ letter = FaxDeLetter.new(fax_de, name_of_file_to_send, contents)
 
 letter.generate_preview do |preview|
     File.open('result.tiff', 'wb') { |f| f.write(preview) }
+    notifier.notify 'Generated preview file.'
 end
 exit if options[:dry_run]
-letter.send
+letter.send do
+    notifier.notify "Sent ‘#{name_of_file_to_send}’."
+end

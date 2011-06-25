@@ -29,7 +29,9 @@ class FaxDeLetter
     end
 
     def send
-        @fax_de.send to_hash
+        @fax_de.send to_hash do
+            yield
+        end
     end
 
     def to_hash
