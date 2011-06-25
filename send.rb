@@ -4,10 +4,8 @@ require 'base64'
 require 'yaml'
 require 'optparse'
 
-require 'rubygems'
-require 'ruby-growl'
-
 require 'fax_de'
+require 'fax_de_growl'
 
 options = {}
 options_parser = OptionParser.new do |opts|
@@ -22,14 +20,6 @@ options_parser = OptionParser.new do |opts|
 end
 options_parser.parse!
 
-class FaxDeGrowlNotifier
-    def initialize
-        @growl = Growl.new "127.0.0.1", "fax.de", ['']
-    end
-    def notify(message)
-        @growl.notify '', 'Fax.de', message
-    end
-end
 
 notifier = FaxDeGrowlNotifier.new
 
