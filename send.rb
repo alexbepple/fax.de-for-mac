@@ -51,7 +51,6 @@ class FaxDeLetter
     end
 
     def to_hash
-        prefs = YAML.load_file('prefs.yml')
         bw_iletter = 3
         {
             :job_art => bw_iletter,
@@ -89,8 +88,8 @@ class FaxDeService
     end
 end
 
-prefs = YAML.load_file('prefs.yml')
-account = Account.new prefs['account'], prefs['password']
+account_prefs = YAML.load_file('account.yml')
+account = Account.new account_prefs['account'], account_prefs['password']
 
 settings = YAML.load_file('settings.yml')
 fax_de = FaxDeService.new(settings['wsdl'], account)
