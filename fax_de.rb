@@ -1,5 +1,6 @@
 require 'rubygems'
 require 'savon'
+require 'base64'
 
 class Account
     attr :account, :password
