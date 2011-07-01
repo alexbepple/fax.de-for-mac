@@ -1,5 +1,8 @@
 #!/usr/bin/env ruby
 
+require 'pathname'
+dir = File.dirname(Pathname.new(__FILE__).realpath)
+
 require 'yaml'
 require 'optparse'
 
@@ -22,10 +25,10 @@ options_parser.parse!
 
 notifier = FaxDeGrowlNotifier.new
 
-account_prefs = YAML.load_file('account.yml')
+account_prefs = YAML.load_file(File.join(dir, 'account.yml'))
 account = Account.new account_prefs['account'], account_prefs['password']
 
-settings = YAML.load_file('settings.yml')
+settings = YAML.load_file(File.join(dir, 'settings.yml'))
 fax_de = FaxDeService.new(settings['wsdl'], account)
 
 name_of_file_to_send = ARGV[0]
