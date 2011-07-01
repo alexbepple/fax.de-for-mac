@@ -1,4 +1,3 @@
-require 'rubygems'
 require 'savon'
 require 'base64'
 
