@@ -1,4 +1,18 @@
 
+Verwendung
+==========
+
+S/W-Brief versenden:
+
+    sende <PDF-Datei>
+
+Dies generiert auch einen Abzug in die Datei `preview.tiff`. Der Abzug spiegelt wider, wie Fax.de den Brief empfangen hat.
+
+`sende -n <PDF>` generiert lediglich den Testabzug.
+
+`sende` ist jeweils ein Alias, siehe Installationsanleitung.
+
+
 Installation
 ============
 
@@ -17,7 +31,7 @@ Installation
         cp account-sample.yml ~/.fax.de/account.yml
         cp settings.yml ~/.fax.de
 
-1. Erstelle symbolischen Link in einem Verzeichnis auf dem `$PATH`.
+1. Erstelle symbolischen Link für `send.wrapper.rb` in einem Verzeichnis auf dem `$PATH`.
 
 
 Benachrichtigungen mit Growl
