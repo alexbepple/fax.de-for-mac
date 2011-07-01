@@ -25,7 +25,7 @@ Installation
 
         bundle install --deployment
 
-1. Kopiere die Konfigurationsdateien.
+1. Kopiere die Konfigurationsdateien nach `~/.fax.de`.
 
         mkdir ~/.fax.de
         cp account-sample.yml ~/.fax.de/account.yml
