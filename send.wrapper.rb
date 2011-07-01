@@ -1,11 +1,12 @@
 #!/usr/bin/env ruby
 
 require 'pathname'
-ENV['BUNDLE_GEMFILE'] ||= File.expand_path("../Gemfile",
-  Pathname.new(__FILE__).realpath)
+app_dir = File.dirname(Pathname.new(__FILE__).realpath)
+
+ENV['BUNDLE_GEMFILE'] ||= File.join(app_dir, 'Gemfile')
 
 require 'rubygems'
 require 'bundler/setup'
 
-$LOAD_PATH.unshift File.dirname(Pathname.new(__FILE__).realpath)
+$LOAD_PATH.unshift app_dir
 load 'send.rb'
